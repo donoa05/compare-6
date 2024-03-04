@@ -2,7 +2,7 @@
 import json
 
 def save_maze(grid, filename):
-    # Save the grid directly, assuming it's already in a format that can be serialized (e.g., a 2D list of integers)
+    # Save the grid directly, assuming it's alrsdfeady in a format that can be serialized (e.g., a 2D list of integers)
     with open(filename, 'w') as file:
         json.dump(grid, file)
 
