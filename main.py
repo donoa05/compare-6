@@ -62,6 +62,8 @@ class NullAlgorithm(MazeGenerator):
         
       # This algorithm does very little, just print a message
       pass
+
+
 class PathfindingApp:
     def __init__(self, grid_size):
       self.grid_size = grid_size  # Store the grid size
@@ -80,6 +82,8 @@ class PathfindingApp:
       self.instruction_screen = None
       self.instruction_toggle_pressed = False
 
+
+  
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -162,19 +166,24 @@ class PathfindingApp:
         self.run_algorithm(dijkstra)
 
     def run_algorithm(self, algorithm):
-        if not self.algorithm_started:
-            self.algorithm_started = True
-            start_time = time.time()
-            if algorithm == astar:
-                visited_nodes = astar(self.grid.grid, self.start, self.goal)
-            elif algorithm == dijkstra:
-                visited_nodes = dijkstra(self.grid.grid, self.start, self.goal)
-            else:
-                visited_nodes = []
-            end_time = time.time()
-            print(f"{algorithm.__name__}: {end_time - start_time}s, Nodes visited: {len(visited_nodes)}")
-            self.path = visited_nodes
+      if not self.algorithm_started:
+          self.algorithm_started = True
+          start_time = time.time()
+          if algorithm == astar:
+              visited_nodes = astar(self.grid.grid, self.start, self.goal)
+          elif algorithm == dijkstra:
+              visited_nodes = dijkstra(self.grid.grid, self.start, self.goal)
+          else:
+              visited_nodes = []
+          end_time = time.time()
+          nodes_examined = len(visited_nodes)
+          print(f"{algorithm.__name__}: {end_time - start_time}s, Nodes visited: {nodes_examined}")
 
+          # Display nodes examined in a separate window
+          nodes_display = NodesExaminedDisplay(algorithm.__name__)
+          nodes_display.display_nodes_examined(nodes_examined)
+
+          self.path = visited_nodes
 
     def handle_drawing_obstacle(self):
         mouse_pos = pygame.mouse.get_pos()
@@ -336,20 +345,30 @@ class BaseWindow:
     def update_display(self):
         pygame.display.flip()
 
-class GridSizeSelectionWindow(BaseWindow):
-    def __init__(self):
-        super().__init__("Grid Size Selection", 400, 300)
-        self.selected_size = None
-        self.sizes = [15, 20, 25, 30]
+class NodesExaminedDisplay(BaseWindow):
+    def __init__(self, algorithm_name):
+        super().__init__(f"{algorithm_name} - Nodes Examined", 300, 100)
+        self.algorithm_name = algorithm_name
 
-    def run(self):
+    def display_nodes_examined(self, nodes_examined):
+        self.screen.fill((255, 255, 255))
+        self.display_message(f"{self.algorithm_name}: {nodes_examined} nodes examined", 24, (self.width // 2, self.height // 2))
+        self.update_display()
+  
+class GridSizeSelectionWindow(BaseWindow):
+  def __init__(self):
+      super().__init__("Grid Size Selection", 400, 350)  # Increase height to accommodate 5 more blocks
+      self.selected_size = None
+      self.sizes = [10, 15, 20, 25, 30]
+
+  def run(self):
       running = True
       while running and self.selected_size is None:
           self.screen.fill((255, 255, 255))
           self.display_message("Select Grid Size", 36, (self.width // 2, 50))
 
           for i, size in enumerate(self.sizes):
-              self.display_message(f"{size}x{size}", 24, (self.width // 2, 120 + i * 40))
+              self.display_message(f"{size}x{size}", 24, (self.width // 2, 120 + i * 50))  # Adjust vertical spacing
 
           for event in pygame.event.get():
               if event.type == pygame.QUIT:
@@ -357,14 +376,16 @@ class GridSizeSelectionWindow(BaseWindow):
               elif event.type == pygame.MOUSEBUTTONDOWN:
                   mouse_x, mouse_y = pygame.mouse.get_pos()
                   for i, _ in enumerate(self.sizes):
-                      if 150 + i * 40 <= mouse_y <= 150 + (i + 1) * 40:
+                      if self.width // 2 - 50 <= mouse_x <= self.width // 2 + 50 and 100 + i * 50 <= mouse_y <= 150 + i * 50:
                           self.selected_size = self.sizes[i]
+                          running = False
                           break
 
           self.update_display()
 
       pygame.quit()
       return self.selected_size
+
 
 if __name__ == "__main__":
   pygame.init()
